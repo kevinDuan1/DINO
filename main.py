@@ -68,7 +68,7 @@ def get_args_parser():
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
     parser.add_argument('--rank', default=0, type=int,
                         help='number of distributed processes')
-    parser.add_argument("--local_rank", type=int, help='local rank for DistributedDataParallel')
+    # parser.add_argument("--local_rank", type=int, help='local rank for DistributedDataParallel')
     parser.add_argument('--amp', action='store_true',
                         help="Train with mixed precision")
     
@@ -123,7 +123,7 @@ def main(args):
         logger.info("Full config saved to {}".format(save_json_path))
     logger.info('world size: {}'.format(args.world_size))
     logger.info('rank: {}'.format(args.rank))
-    logger.info('local_rank: {}'.format(args.local_rank))
+    # logger.info('local_rank: {}'.format(args.local_rank))
     logger.info("args: " + str(args) + '\n')
 
 
@@ -373,7 +373,7 @@ def main(args):
 
     # remove the copied files.
     copyfilelist = vars(args).get('copyfilelist')
-    if copyfilelist and args.local_rank == 0:
+    if copyfilelist and args.rank == 0:
         from datasets.data_util import remove
         for filename in copyfilelist:
             print("Removing: {}".format(filename))
@@ -383,6 +383,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('DETR training and evaluation script', parents=[get_args_parser()])
     args = parser.parse_args()
+    args.local_rank = int(os.environ['LOCAL_RANK'])
     if args.output_dir:
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     main(args)
